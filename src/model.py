@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class Config(BaseModel):
@@ -6,4 +6,6 @@ class Config(BaseModel):
     data: str
 
 class ConfigData(BaseModel):
+    repo: Optional[dict]
+    build: Optional[dict]
     config: List[Config]

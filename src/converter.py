@@ -1,16 +1,17 @@
 import yaml
+import json
 
 
 class YamlConverter:
 
     # main
-    def drone2woodpecker(drone_yaml: str) -> str:
+    def drone2woodpecker(raw_data: str) -> str:
         woodpecker_yaml: str
         woodpecker: dict = {}
         drone: dict
 
         # Load drone.io yaml
-        drone = yaml.load(drone_yaml, Loader=yaml.Loader)
+        drone = yaml.load(raw_data, Loader=yaml.Loader)
 
         # This is where the magic happen
         kind = drone['kind']
