@@ -1,0 +1,46 @@
+kind: pipeline
+type: docker
+name: default
+
+workspace:
+  path: /drone/src
+
+volumes:
+  - name: cache
+    host:
+      path: /var/lib/cache
+
+services:
+  - name: database
+    image: mysql
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+  - name: cache
+    image: redis
+
+steps:
+  - name: backend
+    image: golang:latest
+    volumes:
+      - name: cache
+        path: /tmp/cache
+    commands:
+      - go get
+      - go test
+    when:
+      branch:
+        - master
+        - feature/*
+      event:
+        - push
+        - pull_request
+        - tag
+        - promote
+        - rollback
+
+  - name: frontend
+    image: node:latest
+    commands:
+      - npm install
+      - npm run tests

@@ -4,29 +4,35 @@ import json
 
 class YamlConverter:
 
-    def __environment(self, env):
+    def trigger():
+        ...
+
+    def cloning():
+        ...
+
+    def plugins():
+        ...
+
+    def routing():
+        ...
+
+    def environment(env):
         new_env = []
         for k, v in env.items():
             new_env.append(f'{k}={v}')
         return new_env
 
-    def __trigger():
-        ...
-
-    def __platform(s: str) -> str:
+    def platform(s: str) -> str:
         return f'{s.get("os")}/{s.get("arch")}'
 
-    def __workspaces(s: str) -> str:
+    def workspaces(s: str) -> str:
         return f'path: {s.get("path")}'
-
-    def __cloning():
-        ...
 
     # convert each step
     # require a dict of steps, and a list of host volumes
     # the fuction should return a dictionay of image name as key
     # and an other dictionary as the item
-    def __steps(self, s, host_volumes = []) -> dict:
+    def steps(steps, host_volumes=[]) -> dict:
         # the dictionary for result
         woodpecker_steps = {}
 
@@ -35,23 +41,21 @@ class YamlConverter:
         # and store the result into
         # the result dictionary
 
-        for drone_step in s:
+        for drone_step in steps:
             # elements in each step
             each_step = {}
 
             name = drone_step.get('name')
 
-
-            
             depends_on = drone_step.get('depends_on')
             # secrets
             trigger = drone_step.get('trigger')
-            
+
             # image
             image = drone_step.get('image')
             if image:
                 each_step['image'] = image
-            
+
             # Commands
             commands = drone_step.get('commands')  # not change
             if commands:
@@ -60,21 +64,20 @@ class YamlConverter:
             # Condition
             when = drone_step.get('when')
             if when:
-                when = self.__conditions(when)
+                when = YamlConverter.conditions(when)
                 each_step['when'] = when
 
+            # environment
             environment = drone_step.get('environment')
             if environment:
-                environment = self.__environment(environment)
+                environment = YamlConverter.environment(environment)
                 each_step['environment'] = environment
-
 
             # Volumes
             volumes = drone_step.get('volumes')
             if host_volumes and volumes:
-                volumes = self.__volumes(volumes, host_volumes)
+                volumes = YamlConverter.volumes(volumes, host_volumes)
                 each_step['volumes'] = volumes
-
 
             # there is more  :)
 
@@ -84,10 +87,11 @@ class YamlConverter:
 
         return woodpecker_steps
 
-    # function to convert when in step:
-    def __conditions(self, condition):
+    def conditions(condition):
         woodpecker_condition = {}
 
+        # these three are in drone.io, but
+        # i dont see them in woodpecker
         cron = condition.get('cron')
         ref = condition.get('ref')
         matrix = condition.get('matrix')
@@ -173,33 +177,33 @@ class YamlConverter:
         if instance:
             if type(instance) is dict:
                 if 'include' in instance:
-                    instance['include'] = str(instance['include']).replace("'",'')
+                    instance['include'] = str(
+                        instance['include']).replace("'", '')
                 if 'exclude' in instance:
-                    instance['exclude'] = str(instance['exclude']).replace("'",'')
+                    instance['exclude'] = str(
+                        instance['exclude']).replace("'", '')
             else:
-                instance = str(instance).replace("'",'')
-                
+                instance = str(instance).replace("'", '')
+
             woodpecker_condition['instance'] = instance
 
         # endregion
 
         return woodpecker_condition
 
-    def __plugins():
-        ...
-
-    def __services(s):
+    def services(services):
         woodpecker_services = {}
-        for service in s:
+        for service in services:
             name = service.get('name')
             image = service.get('image')
             woodpecker_services[name] = {'image': image}
+            env = service.get('environment')
+            if env:
+                env = YamlConverter.environment(env)
+                woodpecker_services[name]['environment'] = env
         return woodpecker_services
 
-    def __routing():
-        ...
-
-    def __volumes(volumes, host_volumes):
+    def volumes(volumes, host_volumes):
         woodpecker_volumes = []
 
         for volume in volumes:
@@ -213,50 +217,49 @@ class YamlConverter:
 
     # main
 
-    def drone2woodpecker(raw_data: str) -> str:
-        woodpecker_yaml = ''
+    def drone2woodpecker(drone_data: str) -> str:
         woodpecker = {}
-        drone = {}
 
         # Load drone.io yaml
-        drone = yaml.safe_load(raw_data, Loader=yaml.Loader)
+        drone = yaml.safe_load(drone_data)
 
         # This is where the magic happen
         kind = drone.get('kind')
+
         steps = drone.get('steps')
         volumes = drone.get('volumes')
+        woodpecker_steps = YamlConverter.steps(steps, volumes)
+        woodpecker[kind] = woodpecker_steps
+
+        platform = drone.get('platform')
+        if platform:
+            woodpecker_platform = YamlConverter.platform(platform)
+            woodpecker['platform'] = woodpecker_platform
+
+
+        services = drone.get('services')
+        if services:
+            woodpecker_services = YamlConverter.services(services)
+            woodpecker['services'] = woodpecker_services
         
-        for step in steps:
-            step_name = step['name']
-            step_image = step['image']
-            step_commands = step['commands']  # not change
-
-            step_name_dict = {}
-            step_name_dict['image'] = step_image
-            step_name_dict['commands'] = step_commands
-            pipe = {}
-            pipe[step_name] = step_name_dict
-
-        woodpecker[kind] = pipe
-        # TODO
-        #
-
-        # Dump the woodpecker yaml format
-        woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'","")
+        
+        # woodpecker['branches'] = drone.io does not have this
+        # woodpecker['workspace'] = i dont see this in drone.io
+        # woodpecker['clone'] = this is quite complicate
+        
+        woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
         return woodpecker_yaml
-
-    def woodpecker2drone(rawData: str) -> str:
-        jsonData = yaml.safe_load(rawData, Loader=yaml.Loader)
-        yamlData = yaml.dump(jsonData, allow_unicode=True)
-        return yamlData
 
 
 # For testing
 if __name__ == "__main__":
-    data: str
-    file_path = input('File path: ')
+    with open('test.yaml', 'r') as f:
+        data = yaml.safe_load(f)
+        steps = data.get('steps')
+        volumes = data.get('volmues')
 
-    # read data from file and feed the fuction
-    with open(file_path, 'r') as f:
-        data = f.read()
-        print(YamlConverter.drone2woodpecker(data))
+        the_steps = YamlConverter.steps(steps, volumes)
+
+        the_return = yaml.dump(the_steps, allow_unicode=True).replace("'",'')
+
+        print(the_return)
