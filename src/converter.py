@@ -18,40 +18,50 @@ class YamlConverter:
         ...
 
     # convert each step
-    def __steps(self, s) -> dict:
-        # the fuction should return a dictionay of image name as key
-        # and an other dictionary as the item
-
+    # require a dict of steps, and a list of host volumes
+    # the fuction should return a dictionay of image name as key
+    # and an other dictionary as the item
+    def __steps(self, s, host_volumes = []) -> dict:
         # the dictionary for result
         woodpecker_steps = {}
 
         # for each step in drone step
-        # convert in to woodpecker
-        # and store the result in to
-        # the result dictionanry
+        # convert it into woodpecker
+        # and store the result into
+        # the result dictionary
 
         for drone_step in s:
-            # split get value
+            # elements in each step
+            each_step = {}
+
             name = drone_step.get('name')
+
             image = drone_step.get('image')
+            if image:
+                each_step['image'] = image
+
             commands = drone_step.get('commands')  # not change
+            if commands:
+                each_step['commands'] = commands
+            
             environment = drone_step.get('environment')
+            depends_on = drone_step.get('depends_on')
             # secrets
+            trigger = drone_step.get('trigger')
 
             when = drone_step.get('when')
-            # when is nested, need a fuction to convert.
-            # this conditions
-            when = self.__conditions(when)
+            if when:
+                when = self.__conditions(when)
+                each_step['when'] = when
 
-            trigger = drone_step.get('trigger')
-            depends_on = drone_step.get('depends_on')
+            volumes = drone_step.get('volumes')
+            if host_volumes and volumes:
+                volumes = self.__volumes(volumes, host_volumes)
+
+
 
             # there is more  :)
 
-            # elements in each step
-            each_step = {}
-            each_step["image"] = image
-            each_step["commands"] = commands
             # more
 
             woodpecker_steps[name] = each_step
@@ -59,7 +69,7 @@ class YamlConverter:
         return woodpecker_steps
 
     # function to convert when in step:
-    def __conditions(self, condition) -> dict:
+    def __conditions(self, condition):
         woodpecker_condition = {}
 
         cron = condition.get('cron')
@@ -181,28 +191,36 @@ class YamlConverter:
             woodpecker_services[name] = {'image': image}
         return woodpecker_services
 
-    def __parallelism():
-        ...
-
     def __routing():
         ...
 
-    def __volumes():
-        ...
+    def __volumes(volumes, host_volumes):
+        woodpecker_volumes = []
+
+        for volume in volumes:
+            volume_name = volume.get('name')
+            volume_path = volume.get('path')
+            for host_volume in host_volumes:
+                if host_volume.get('name') == volume_name:
+                    host_path = host_volume.get('host').get('path')
+                    woodpecker_volumes.append(f'{host_path}:{volume_path}')
+        return woodpecker_volumes
 
     # main
 
     def drone2woodpecker(raw_data: str) -> str:
-        woodpecker_yaml: str
-        woodpecker: dict = {}
-        drone: dict
+        woodpecker_yaml = ''
+        woodpecker = {}
+        drone = {}
 
         # Load drone.io yaml
-        drone = yaml.load(raw_data, Loader=yaml.Loader)
+        drone = yaml.safe_load(raw_data, Loader=yaml.Loader)
 
         # This is where the magic happen
-        kind = drone['kind']
-        steps = drone['steps']
+        kind = drone.get('kind')
+        steps = drone.get('steps')
+        volumes = drone.get('volumes')
+        
         for step in steps:
             step_name = step['name']
             step_image = step['image']
