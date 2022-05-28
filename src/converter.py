@@ -1,10 +1,15 @@
-from os import environ
-from platform import python_branch
 import yaml
 import json
 
 
 class YamlConverter:
+
+    def __environment(self, env):
+        new_env = []
+        for k, v in env.items():
+            new_env.append(f'{k}={v}')
+        return new_env
+
     def __trigger():
         ...
 
@@ -36,28 +41,39 @@ class YamlConverter:
 
             name = drone_step.get('name')
 
-            image = drone_step.get('image')
-            if image:
-                each_step['image'] = image
 
-            commands = drone_step.get('commands')  # not change
-            if commands:
-                each_step['commands'] = commands
             
-            environment = drone_step.get('environment')
             depends_on = drone_step.get('depends_on')
             # secrets
             trigger = drone_step.get('trigger')
+            
+            # image
+            image = drone_step.get('image')
+            if image:
+                each_step['image'] = image
+            
+            # Commands
+            commands = drone_step.get('commands')  # not change
+            if commands:
+                each_step['commands'] = commands
 
+            # Condition
             when = drone_step.get('when')
             if when:
                 when = self.__conditions(when)
                 each_step['when'] = when
 
+            environment = drone_step.get('environment')
+            if environment:
+                environment = self.__environment(environment)
+                each_step['environment'] = environment
+
+
+            # Volumes
             volumes = drone_step.get('volumes')
             if host_volumes and volumes:
                 volumes = self.__volumes(volumes, host_volumes)
-
+                each_step['volumes'] = volumes
 
 
             # there is more  :)
@@ -149,17 +165,6 @@ class YamlConverter:
             platform = self.__platform(platform)
 
             woodpecker_condition["platform"] = platform
-
-        # endregion
-
-        # region Convert environment
-        environment = condition.get('environment')
-        if environment:
-            new_env = []
-            for k, v in environment.items():
-                new_env.append(f'{k}={v}')
-            environment = new_env
-            woodpecker_condition["environment"] = environment
 
         # endregion
 
