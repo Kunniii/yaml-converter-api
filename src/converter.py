@@ -1,6 +1,5 @@
 import yaml
-import json
-
+from server_log import write_log
 
 class YamlConverter:
 
@@ -79,7 +78,7 @@ class YamlConverter:
                 volumes = YamlConverter.volumes(volumes, host_volumes)
                 each_step['volumes'] = volumes
 
-            # there is more  :)
+            # there is more
 
             # more
 
@@ -166,7 +165,7 @@ class YamlConverter:
         # region Convert platform
         platform = condition.get('platform')
         if platform:
-            platform = self.__platform(platform)
+            platform = YamlConverter.platform(platform)
 
             woodpecker_condition["platform"] = platform
 
@@ -218,38 +217,53 @@ class YamlConverter:
     # main
 
     def drone2woodpecker(drone_data: str) -> str:
+
+        write_log(2, f'Converter - Recieved \n{drone_data}')
+
         woodpecker = {}
 
         # Load drone.io yaml
         drone = yaml.safe_load(drone_data)
 
         # This is where the magic happen
-        kind = drone.get('kind')
-
-        steps = drone.get('steps')
-        volumes = drone.get('volumes')
-        woodpecker_steps = YamlConverter.steps(steps, volumes)
-        woodpecker[kind] = woodpecker_steps
-
-        platform = drone.get('platform')
-        if platform:
-            woodpecker_platform = YamlConverter.platform(platform)
-            woodpecker['platform'] = woodpecker_platform
-
-
-        services = drone.get('services')
-        if services:
-            woodpecker_services = YamlConverter.services(services)
-            woodpecker['services'] = woodpecker_services
+        if type(drone) is dict:
+            kind = drone.get('kind')
+        else:
+            kind = []
         
-        
-        # woodpecker['branches'] = drone.io does not have this
-        # woodpecker['workspace'] = i dont see this in drone.io
-        # woodpecker['clone'] = this is quite complicate
-        
-        woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
-        return woodpecker_yaml
+        if kind:
 
+            steps = drone.get('steps')
+            volumes = drone.get('volumes')
+            if steps:
+                woodpecker_steps = YamlConverter.steps(steps, volumes)
+                woodpecker[kind] = woodpecker_steps
+
+            platform = drone.get('platform')
+            if platform:
+                woodpecker_platform = YamlConverter.platform(platform)
+                woodpecker['platform'] = woodpecker_platform
+
+
+            services = drone.get('services')
+            if services:
+                woodpecker_services = YamlConverter.services(services)
+                woodpecker['services'] = woodpecker_services
+            
+            
+            # woodpecker['branches'] = drone.io does not have this
+            # woodpecker['workspace'] = i dont see this in drone.io
+            # woodpecker['clone'] = this is quite complicate
+            
+            woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
+            
+            write_log(2, f'Returned {woodpecker}')
+            
+            return woodpecker_yaml
+        
+        write_log(2, f'Data is Woodpecker-ci format, nothing to convert!')
+
+        return drone_data
 
 # For testing
 if __name__ == "__main__":
