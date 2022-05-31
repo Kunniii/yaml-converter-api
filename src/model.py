@@ -8,4 +8,4 @@ class Config(BaseModel):
 class ConfigData(BaseModel):
     repo: Optional[dict]
     build: Optional[dict]
-    config: List[Config]
+    configs: List[Config]

@@ -14,7 +14,7 @@ Post data should look like this
 
 ```json
 {
-    "config": [
+    "configs": [
     {
       "name": ".woodpecekr.yml",
       "data": "kind: pipeline\ntype: docker\nname: frontend\n\nsteps:\n  - name: frontend\n    image: node\n    commands:\n      - npm install\n      - npm test\n"
