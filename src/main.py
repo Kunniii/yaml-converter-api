@@ -1,12 +1,15 @@
 from fastapi import Response, FastAPI, status
 from converter import YamlConverter
 from model import ConfigData
+<<<<<<< HEAD
 from server_log import write_log
 
 
 '''
 A log file can be found at ./logs/app.log
 '''
+=======
+>>>>>>> e2cc8126f99935a087a95dab7458bedcda75759d
 
 app = FastAPI()
 
@@ -18,6 +21,10 @@ async def home():
 
 @app.post('/convert')
 async def convert_drone2woodpecker(request_data: ConfigData, response: Response):
+<<<<<<< HEAD
+=======
+
+>>>>>>> e2cc8126f99935a087a95dab7458bedcda75759d
     # if the configs is empty
     if not request_data.configs:
         response.status_code = status.HTTP_400_BAD_REQUEST
