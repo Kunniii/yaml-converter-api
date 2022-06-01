@@ -256,17 +256,12 @@ class YamlConverter:
             # woodpecker['clone'] = this is quite complicate
             
             woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
-<<<<<<< HEAD
             
             write_log(2, f'Returned {woodpecker}')
             
             return woodpecker_yaml
         
         write_log(2, f'Data is Woodpecker-ci format, nothing to convert!')
-
-=======
-            return woodpecker_yaml
->>>>>>> e2cc8126f99935a087a95dab7458bedcda75759d
         return drone_data
 
 # For testing
