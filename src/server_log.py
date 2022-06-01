@@ -4,7 +4,7 @@ import os
 # Create ./logs/app.log
 try:
     os.mkdir('./logs')
-    os.system('touch ./logs/app.log')
+    os.system('touch ./logs/api.log')
 # If folder exsits, do nothing
 except:
     pass
@@ -14,7 +14,7 @@ rootLogger = log.getLogger()
 
 rootLogger.setLevel(log.DEBUG)
 
-fileHandler = log.FileHandler("./logs/app.log")
+fileHandler = log.FileHandler("./logs/api.log")
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
 
