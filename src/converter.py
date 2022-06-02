@@ -114,10 +114,14 @@ class YamlConverter:
                 if "exclude" in branch:
                     if len(branch.get('exclude')) == 1:
                         branch["exclude"] = branch["exclude"][0]
-                    branch["exclude"] = str(branch["exclude"]).replace("'", '')
+                    else:
+                        branch["exclude"] = str(branch["exclude"]).replace("'", '')
             # else branch is a list
             else:
-                branch = str(branch).replace("'", '')
+                if len(branch) == 1:
+                    branch = branch[0]
+                else:
+                    branch = str(branch).replace("'", '')
 
             woodpecker_condition["branch"] = branch
 
