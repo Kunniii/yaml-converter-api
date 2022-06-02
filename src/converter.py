@@ -15,6 +15,10 @@ class YamlConverter:
     def routing():
         ...
 
+    def cloning():
+        ...
+
+
     def environment(env):
         new_env = []
         for k, v in env.items():
@@ -102,10 +106,15 @@ class YamlConverter:
             if type(branch) is dict:
                 # if branch has 'include'
                 if "include" in branch:
-                    branch["include"] = str(branch['include']).replace("'", '')
+                    if len(branch.get('include')) == 1:
+                        branch["include"] = branch["include"][0]
+                    else:
+                        branch["include"] = str(branch["include"]).replace("'", '')
                 # if branch has 'exclude'
                 if "exclude" in branch:
-                    branch["exclude"] = str(branch['exclude']).replace("'", '')
+                    if len(branch.get('exclude')) == 1:
+                        branch["exclude"] = branch["exclude"][0]
+                    branch["exclude"] = str(branch["exclude"]).replace("'", '')
             # else branch is a list
             else:
                 branch = str(branch).replace("'", '')
@@ -120,9 +129,9 @@ class YamlConverter:
         if event:
             if type(event) is dict:
                 if "include" in event:
-                    event["include"] = str(event['include']).replace("'", '')
+                    event["include"] = str(event["include"]).replace("'", '')
                 if "exclude" in event:
-                    event["exclude"] = str(event['exclude']).replace("'", '')
+                    event["exclude"] = str(event["exclude"]).replace("'", '')
             else:
                 event = str(event).replace("'", '')
 
@@ -135,9 +144,9 @@ class YamlConverter:
             # if status is dict, then it has include, exclude
             if type(status) is dict:
                 if "include" in status:
-                    status["include"] = str(status['include']).replace("'", '')
+                    status["include"] = str(status["include"]).replace("'", '')
                 if "exclude" in status:
-                    status["exclude"] = str(status['exclude']).replace("'", '')
+                    status["exclude"] = str(status["exclude"]).replace("'", '')
             else:
                 status = str(status).replace("'", '')
 
@@ -153,9 +162,9 @@ class YamlConverter:
         if repo:
             if type(repo) is dict:
                 if "include" in repo:
-                    repo["include"] = str(repo['include']).replace("'", "")
+                    repo["include"] = str(repo["include"]).replace("'", "")
                 if "exclude" in repo:
-                    repo["exclude"] = str(repo['exclude']).replace("'", "")
+                    repo["exclude"] = str(repo["exclude"]).replace("'", "")
             else:
                 repo = str(repo).replace("'", '')
             woodpecker_condition['repo'] = repo
@@ -172,7 +181,7 @@ class YamlConverter:
         # endregion
 
         # region Convert instance
-        instance = condition.get('instance')
+        instance = condition.get("instance")
         if instance:
             if type(instance) is dict:
                 if 'include' in instance:
@@ -218,7 +227,7 @@ class YamlConverter:
 
     def drone2woodpecker(drone_data: str) -> str:
 
-        write_log(2, f'Converter - Recieved \n{drone_data}')
+        write_log(1, f'Converter - Recieved \n{drone_data}')
 
         woodpecker = {}
 
@@ -257,11 +266,11 @@ class YamlConverter:
             
             woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
             
-            write_log(2, f'Returned {woodpecker}')
+            write_log(1, f'Returned \n{woodpecker_yaml}')
             
             return woodpecker_yaml
         
-        write_log(2, f'Data is Woodpecker-ci format, nothing to convert!')
+        write_log(1, f'Data is Woodpecker-ci format, nothing to convert!')
         return drone_data
 
 # For testing
