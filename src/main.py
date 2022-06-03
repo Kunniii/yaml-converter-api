@@ -34,7 +34,7 @@ async def convert_drone2woodpecker(request_data: ConfigData, response: Response)
 
         config.data = YamlConverter.drone2woodpecker(config.data)
 
-    response_data = {"pipelines": response_data.configs}
+    response_data = {"configs": response_data.configs}
 
     # according to woodpecker's docs, returned HTTP status code is 204 if there is
     # nothing change, and tell the system to use current config. Or else, return nomal.
