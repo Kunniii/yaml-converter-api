@@ -18,14 +18,15 @@ async def home():
 
 @app.post('/convert')
 async def convert_drone2woodpecker(request_data: ConfigData, response: Response):
-    temp = request_data.configs
-
+    t = request_data
     # if the configs is empty
     if not request_data.configs:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"detail": [{"msg": "field is empty", }]}
 
-    for config in request_data.configs:
+    response_data = request_data
+
+    for config in response_data.configs:
         # if the configs is not empty, but the data or name
         if not config.data or not config.name:
             response.status_code = status.HTTP_400_BAD_REQUEST
@@ -33,10 +34,7 @@ async def convert_drone2woodpecker(request_data: ConfigData, response: Response)
 
         config.data = YamlConverter.drone2woodpecker(config.data)
 
-    response_data = {"pipelines": request_data.configs}
-
-    write_log(1, f'API Recieved\n{request_data}')
-    write_log(1, f'API Returned\n{response_data}')
+    response_data = {"pipelines": response_data.configs}
 
     # according to woodpecker's docs, returned HTTP status code is 204 if there is
     # nothing change, and tell the system to use current config. Or else, return nomal.

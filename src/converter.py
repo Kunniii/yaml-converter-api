@@ -6,9 +6,6 @@ class YamlConverter:
     def trigger():
         ...
 
-    def cloning():
-        ...
-
     def plugins():
         ...
 
@@ -35,7 +32,7 @@ class YamlConverter:
     # require a dict of steps, and a list of host volumes
     # the fuction should return a dictionay of image name as key
     # and an other dictionary as the item
-    def steps(steps, host_volumes=[]) -> dict:
+    def steps(steps, host_volumes=[], clone=None) -> dict:
         # the dictionary for result
         woodpecker_steps = {}
 
@@ -62,6 +59,13 @@ class YamlConverter:
             # Commands
             commands = drone_step.get('commands')  # not change
             if commands:
+                # if the command of step contain `git` then it's `clone`
+                if any(command.startswith('git') for command in commands):
+                    # if there is any setting, assign it to the clone step
+                    if clone:
+                        each_step['settings'] = clone
+                        
+
                 each_step['commands'] = commands
 
             # Condition
@@ -248,8 +252,9 @@ class YamlConverter:
 
             steps = drone.get('steps')
             volumes = drone.get('volumes')
+            clone = drone.get('clone')
             if steps:
-                woodpecker_steps = YamlConverter.steps(steps, volumes)
+                woodpecker_steps = YamlConverter.steps(steps, volumes, clone)
                 woodpecker[kind] = woodpecker_steps
 
             platform = drone.get('platform')
@@ -263,11 +268,17 @@ class YamlConverter:
                 woodpecker_services = YamlConverter.services(services)
                 woodpecker['services'] = woodpecker_services
             
+            workspace =  drone.get('workspace')
+            if workspace:
+                woodpecker['workspace'] = workspace
             
-            # woodpecker['branches'] = drone.io does not have this
-            # woodpecker['workspace'] = i dont see this in drone.io
-            # woodpecker['clone'] = this is quite complicate
+            # for clone in woodpecker, we can just make it a step,
+            # it work in both drone.io and woodpecker-ci
             
+            # for global `branches` of woopecker-ci, there is no 
+            # equivalent options in drone.io, but the local branch
+            # in each steps is present and works well.
+
             woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
             
             write_log(1, f'Returned \n{woodpecker_yaml}')
