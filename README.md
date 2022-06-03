@@ -16,7 +16,7 @@ Post data should look like this
 {
     "configs": [
     {
-      "name": ".woodpecekr.yml",
+      "name": ".woodpecekr.yaml",
       "data": "kind: pipeline\ntype: docker\nname: frontend\n\nsteps:\n  - name: frontend\n    image: node\n    commands:\n      - npm install\n      - npm test\n"
     }
   ]
@@ -27,9 +27,9 @@ The return data is your `woodpecker-ci` yaml.
 
 ```json
 {
-  "pipelines": [
+  "configs": [
     {
-      "name": ".woodpecekr.yml",
+      "name": ".woodpecekr.yaml",
       "data": "pipeline:\n  frontend:\n    commands:\n    - npm install\n    - npm test\n    image: node\n"
     }
   ]
