@@ -1,16 +1,16 @@
 # YAML Converter API
 
-This project is to have a API to convert `drone.ci` yaml workflow format in to `woodpecker-ci` one.
+This project is to have a API to convert `drone.ci` yaml workflow format into `woodpecker-ci` one.
 
 ## How this work?
 
-Run this project.
+Run this project using Docker.
 
 Make a `post` request to `localhost:port/convert`.
 
 The `port` is your mapped port in `docker-conpose.yaml`. Default port is 80.
 
-Post data should look like this
+The post data should look like this
 
 ```json
 {
