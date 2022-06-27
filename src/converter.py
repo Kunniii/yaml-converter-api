@@ -84,9 +84,10 @@ class YamlConverter:
                 volumes = YamlConverter.volumes(volumes, host_volumes)
                 each_step['volumes'] = volumes
 
-            # there is more
-
-            # more
+            # Settings
+            settings = drone_step.get('settings')
+            if settings:
+                each_step['settings'] = settings
 
             woodpecker_steps[name] = each_step
 
