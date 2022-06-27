@@ -292,12 +292,4 @@ class YamlConverter:
 # For testing
 if __name__ == "__main__":
     with open('test.yaml', 'r') as f:
-        data = yaml.safe_load(f)
-        steps = data.get('steps')
-        volumes = data.get('volmues')
-
-        the_steps = YamlConverter.steps(steps, volumes)
-
-        the_return = yaml.dump(the_steps, allow_unicode=True).replace("'",'')
-
-        print(the_return)
+        YamlConverter.drone2woodpecker(f)
