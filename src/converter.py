@@ -64,13 +64,6 @@ class YamlConverter:
             # Commands
             commands = drone_step.get('commands')  # not change
             if commands:
-                # if the command of step contain `git` then it's `clone`
-                if any(command.startswith('git') for command in commands):
-                    # if there is any setting, assign it to the clone step
-                    if clone:
-                        each_step['settings'] = clone
-                        
-
                 each_step['commands'] = commands
 
             # Condition
@@ -252,12 +245,14 @@ class YamlConverter:
             kind = drone.get('kind')
         else:
             kind = []
-        
+
         if kind:
 
             steps = drone.get('steps')
             volumes = drone.get('volumes')
             clone = drone.get('clone')
+            if clone.get('disable'):
+                woodpecker['skip_clone'] = True
             if steps:
                 woodpecker_steps = YamlConverter.steps(steps, volumes, clone)
                 woodpecker[kind] = woodpecker_steps
