@@ -1,11 +1,9 @@
 version: '3.9'
 services:
   yaml-converter-api:
-    image: python:3
     build: .
     volumes:
       - ./src:/yaml-converter-api:rw
     ports:
       - 80:80
     command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
-    
