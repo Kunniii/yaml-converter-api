@@ -280,7 +280,7 @@ class YamlConverter:
             # equivalent options in drone.io, but the local branch
             # in each steps is present and works well.
 
-            woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
+            woodpecker_yaml = yaml.safe_dump(woodpecker, allow_unicode=True, sort_keys=False).replace("'", "")
             
             write_log(1, f'Returned \n{woodpecker_yaml}')
             
