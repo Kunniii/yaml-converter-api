@@ -56,6 +56,11 @@ class YamlConverter:
             if image:
                 each_step['image'] = image
 
+            pull = drone_step.get('pull')
+            if pull == "always":
+                each_step['pull'] = True
+
+
             # Commands
             commands = drone_step.get('commands')  # not change
             if commands:
