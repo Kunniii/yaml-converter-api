@@ -8,7 +8,7 @@ Run this project using Docker.
 
 Make a `post` request to `localhost:port/convert`.
 
-The `port` is your mapped port in `docker-conpose.yaml`. Default port is 80.
+The `port` is your mapped port in `docker-compose.yaml`. Default port is 80.
 
 The post data should look like this
 
