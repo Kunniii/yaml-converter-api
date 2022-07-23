@@ -56,16 +56,14 @@ class YamlConverter:
             if image:
                 each_step['image'] = image
 
+            pull = drone_step.get('pull')
+            if pull == "always":
+                each_step['pull'] = True
+
+
             # Commands
             commands = drone_step.get('commands')  # not change
             if commands:
-                # if the command of step contain `git` then it's `clone`
-                if any(command.startswith('git') for command in commands):
-                    # if there is any setting, assign it to the clone step
-                    if clone:
-                        each_step['settings'] = clone
-                        
-
                 each_step['commands'] = commands
 
             # Condition
@@ -86,9 +84,10 @@ class YamlConverter:
                 volumes = YamlConverter.volumes(volumes, host_volumes)
                 each_step['volumes'] = volumes
 
-            # there is more
-
-            # more
+            # Settings
+            settings = drone_step.get('settings')
+            if settings:
+                each_step['settings'] = settings
 
             woodpecker_steps[name] = each_step
 
@@ -247,12 +246,14 @@ class YamlConverter:
             kind = drone.get('kind')
         else:
             kind = []
-        
+
         if kind:
 
             steps = drone.get('steps')
             volumes = drone.get('volumes')
             clone = drone.get('clone')
+            if clone.get('disable'):
+                woodpecker['skip_clone'] = True
             if steps:
                 woodpecker_steps = YamlConverter.steps(steps, volumes, clone)
                 woodpecker[kind] = woodpecker_steps
@@ -279,7 +280,7 @@ class YamlConverter:
             # equivalent options in drone.io, but the local branch
             # in each steps is present and works well.
 
-            woodpecker_yaml = yaml.dump(woodpecker, allow_unicode=True).replace("'", "")
+            woodpecker_yaml = yaml.safe_dump(woodpecker, allow_unicode=True, sort_keys=False).replace("'", "")
             
             write_log(1, f'Returned \n{woodpecker_yaml}')
             
@@ -291,12 +292,4 @@ class YamlConverter:
 # For testing
 if __name__ == "__main__":
     with open('test.yaml', 'r') as f:
-        data = yaml.safe_load(f)
-        steps = data.get('steps')
-        volumes = data.get('volmues')
-
-        the_steps = YamlConverter.steps(steps, volumes)
-
-        the_return = yaml.dump(the_steps, allow_unicode=True).replace("'",'')
-
-        print(the_return)
+        YamlConverter.drone2woodpecker(f)
